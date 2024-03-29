@@ -1,0 +1,99 @@
+name: Update UI
+description: Updates the UI module version in go.mod and creates a PR if there is a new version
+inputs:
+  moduleName:
+    description: 'Module name to update (e.g., walletd)'
+    required: true
+  goVersion:
+    description: 'Go version to use (e.g., "1.21")'
+    required: true
+  token:
+    description: 'GitHub token for authentication'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ inputs.goVersion }}
+
+    - name: Check for new tag in SiaFoundation/web
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        # Fetch tags with pagination
+        TAGS_JSON=$(gh api --paginate repos/SiaFoundation/web/tags)
+    
+        # Extract tags that start with "moduleName/", sort them in version order, and pick the highest version
+        LATEST_GO_TAG=$(echo "$TAGS_JSON" | jq -r '.[] | select(.name | startswith("${{ inputs.moduleName }}/")).name' | sort -Vr | head -n 1)
+        LATEST_VERSION=$(echo "$LATEST_GO_TAG" | sed "s/${{ inputs.moduleName }}\///")
+    
+        echo "Latest tag is $LATEST_GO_TAG"
+        echo "GO_TAG=$LATEST_GO_TAG" >> $GITHUB_ENV
+        echo "VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+
+    - name: Fetch release notes for the release
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      if: env.GO_TAG != 'null'
+      run: |
+        RELEASE_TAG_FORMATTED=$(echo "$GO_TAG" | sed 's/\/v/@/')
+        RELEASES_JSON=$(gh api --paginate repos/SiaFoundation/web/releases)
+
+        RELEASE_NOTES=$(echo "$RELEASES_JSON" | jq -r --arg TAG_NAME "$RELEASE_TAG_FORMATTED" '.[] | select(.name == $TAG_NAME).body')
+        echo "Release notes for $RELEASE_TAG_FORMATTED: $RELEASE_NOTES"
+        echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+        echo "$RELEASE_NOTES" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+    - name: Get current module version
+      if: env.GO_TAG != 'null'
+      run: |
+        CURRENT_VERSION=$(grep 'go.sia.tech/web/${{ inputs.moduleName }}' go.mod | awk '{print $2}')
+        echo "Current version of the module: $CURRENT_VERSION"
+        echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+
+    - name: Update go.mod with latest module
+      if: env.GO_TAG != 'null'
+      run: |
+        GO_MODULE_FORMATTED=$(echo "$GO_TAG" | sed 's/\//@/')
+        echo "Updating go.mod to use $GO_MODULE_FORMATTED"
+        go clean -modcache
+        go get go.sia.tech/web/$GO_MODULE_FORMATTED
+        go mod tidy
+
+    - name: Check module version post-update
+      if: env.GO_TAG != 'null'
+      run: |
+        UPDATED_VERSION=$(grep 'go.sia.tech/web/${{ inputs.moduleName }}' go.mod | awk '{print $2}')
+        echo "Updated version of the module: $UPDATED_VERSION"
+        if [ "$UPDATED_VERSION" != "$CURRENT_VERSION" ]; then
+          echo "The module was updated."
+          echo "UPDATED=true" >> $GITHUB_ENV
+        else
+          echo "The module was not updated."
+          echo "UPDATED=false" >> $GITHUB_ENV
+        fi
+
+    - name: Set PR Branch Name
+      if: env.GO_TAG != 'null' && env.UPDATED == 'true'
+      run: |
+        # Using the updated version for branch name
+        PR_BRANCH_NAME="ui/update-${{ env.VERSION }}"
+        echo "PR_BRANCH_NAME=$PR_BRANCH_NAME" >> $GITHUB_ENV
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      if: env.GO_TAG != 'null' && env.UPDATED == 'true'
+      with:
+        token: ${{ inputs.token }}
+        commit-message: "ui: ${{ env.VERSION }}"
+        title: "ui: ${{ env.VERSION }}"
+        body: ${{ env.RELEASE_NOTES }}
+        branch: "ui/update"
+        delete-branch: true
