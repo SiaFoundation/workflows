@@ -6,6 +6,10 @@ inputs:
     description: 'Arguments to pass to `go test`'
     required: false
     default: -race;-tags=testing netgo
+  show-stdout:
+    description: "Show unparsed stdout from `go test`"
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -18,3 +22,4 @@ runs:
       uses: n8maninger/action-golang-test@v2
       with:
         args: ${{ inputs.go-test-args }}
+        show-stdout: "${{ inputs.show-stdout }}"

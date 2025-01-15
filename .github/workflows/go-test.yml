@@ -3,6 +3,11 @@ name: Lint & Test Go
 on:
   workflow_call:
     inputs:
+      show-stdout:
+        description: "Show unparsed stdout from `go test`"
+        type: string
+        required: false
+        default: "false"
       go-test-args:
         description: "Arguments to pass to `go test`"
         type: string
@@ -32,6 +37,7 @@ jobs:
       - uses: SiaFoundation/workflows/.github/actions/go-test@master
         with:
           go-test-args: ${{ inputs.go-test-args }}
+          show-stdout: "${{ inputs.show-stdout }}"
       - name: Build
         if: ${{ inputs.try-build }}
         shell: bash
