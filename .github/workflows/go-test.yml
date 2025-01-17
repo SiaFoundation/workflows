@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
-      - uses: SiaFoundation/workflows/.github/actions/go-test@master
+      - uses: SiaFoundation/workflows/.github/actions/go-test@42f060343ed81a8d90a31ee9326b62ada3714039
         with:
           go-test-args: ${{ inputs.go-test-args }}
           show-stdout: "${{ inputs.show-stdout }}"
