@@ -57,7 +57,7 @@ env:
 jobs:
   docker:
     name: Docker
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-publish
     permissions:
       packages: write
       contents: read
@@ -97,7 +97,7 @@ jobs:
           cache-to: type=gha,mode=max
   linux:
     name: Build Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-publish
     strategy:
       matrix:
         go-arch: [amd64, arm64]
@@ -225,7 +225,7 @@ jobs:
           path: release/*
   windows:
     name: Build Windows
-    runs-on: windows-latest
+    runs-on: windows-publish
     strategy:
       matrix:
         go-arch: [amd64]

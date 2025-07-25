@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.23, 1.24]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-publish, windows-publish, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Configure Git # required for golangci-lint on Windows
