@@ -1,0 +1,76 @@
+name: Publish OpenAPI to Scalar Registry
+
+on:
+  workflow_call:
+    inputs:
+      name:
+        description: Display name of the API being published.
+        required: true
+        type: string
+      spec_path:
+        description: Path to the OpenAPI spec file in the repo.
+        required: true
+        type: string
+      slug:
+        description: Scalar registry slug for this API.
+        required: true
+        type: string
+      namespace:
+        description: Scalar namespace (organization/project).
+        required: false
+        default: 'sia'
+        type: string
+      node_version:
+        description: Node.js version to use.
+        required: false
+        default: '20'
+        type: string
+    secrets:
+      SCALAR_API_KEY:
+        required: true
+
+jobs:
+  publish:
+    name: Publish ${{ inputs.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+
+      # Install yq to parse YAML.
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      # Bundle the OpenAPI spec to resolve external refs.
+      - name: Bundle OpenAPI (${{ inputs.name }})
+        run: npx --yes @scalar/cli document bundle ${{ inputs.spec_path }} --output "$RUNNER_TEMP/bundle-${{ inputs.slug }}.yml"
+
+      # Validate the bundled OpenAPI spec.
+      - name: Validate OpenAPI (Bundled ${{ inputs.name }})
+        run: npx --yes @scalar/cli document validate "$RUNNER_TEMP/bundle-${{ inputs.slug }}.yml"
+
+      # Extract version from info.version.
+      - name: Extract version (${{ inputs.name }})
+        id: ver
+        run: echo "version=$(yq -r '.info.version' ${{ inputs.spec_path }})" >> "$GITHUB_OUTPUT"
+
+      # Authenticate with Scalar.
+      - name: Login to Scalar
+        run: npx --yes @scalar/cli auth login --token ${{ secrets.SCALAR_API_KEY }}
+
+      # Publish to Scalar Registry.
+      - name: Publish to Registry (${{ inputs.name }})
+        run: |
+          npx --yes @scalar/cli registry publish "$RUNNER_TEMP/bundle-${{ inputs.slug }}.yml" \
+            --namespace "${{ inputs.namespace }}" \
+            --slug "${{ inputs.slug }}" \
+            --version "${{ steps.ver.outputs.version }}" \
+            --force
