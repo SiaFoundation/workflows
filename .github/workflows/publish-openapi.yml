@@ -21,6 +21,10 @@ on:
         required: false
         default: '20'
         type: string
+      docs_slug:
+        description: Scalar docs site to publish after openapi spec is published.
+        required: false
+        type: string
     secrets:
       SCALAR_API_KEY:
         required: true
@@ -70,3 +74,11 @@ jobs:
             --slug "${{ inputs.slug }}" \
             --version "${{ steps.ver.outputs.version }}" \
             --force
+
+      # Publish Scalar Docs site.
+      - name: Publish Scalar Docs
+        if: ${{ inputs.docs_slug != '' }}
+        run: |
+          curl -fsSL -X POST "https://access.scalar.com/v1/guides/${{ inputs.docs_slug }}/publish" \
+            -H "Authorization: Bearer ${{ secrets.SCALAR_API_KEY }}"
+
