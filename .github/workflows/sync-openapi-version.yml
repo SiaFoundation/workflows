@@ -122,8 +122,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: chore/sync-openapi-version-to-${{ steps.sync.outputs.version }}
-          commit-message: chore(openapi): sync info.version to ${{ steps.sync.outputs.version }}
-          title: chore(openapi): sync OpenAPI info.version to ${{ steps.sync.outputs.version }}
+          commit-message: "chore(openapi): sync info.version to ${{ steps.sync.outputs.version }}"
+          title: "chore(openapi): sync OpenAPI info.version to ${{ steps.sync.outputs.version }}"
           body: |
             This PR updates OpenAPI spec versions to match the latest release tag `${{ steps.sync.outputs.tag }}`.
 
@@ -133,4 +133,3 @@ jobs:
             openapi
           add-paths: |
             ${{ steps.sync.outputs.files }}
-
