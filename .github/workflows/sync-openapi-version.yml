@@ -1,0 +1,136 @@
+name: Sync OpenAPI spec Version with latest release
+
+on:
+  workflow_call:
+    inputs:
+      spec_path:
+        description: OpenAPI spec file path.
+        required: false
+        type: string
+      spec_paths:
+        description: Newline-separated list of OpenAPI spec file paths or globs.
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Sync OpenAPI versions
+        id: sync
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const core = require('@actions/core');
+            const { execFileSync } = require('child_process');
+            const fs = require('fs');
+
+            function resolveFiles(entries) {
+              const seen = new Set();
+              const files = [];
+              for (const e of entries) {
+                if (!e) continue;
+                const out = execFileSync('git', ['ls-files', '--', e], { encoding: 'utf8' });
+                for (const line of out.split('\n')) {
+                  const f = line.trim();
+                  if (!f) continue;
+                  if (!seen.has(f)) { seen.add(f); files.push(f); }
+                }
+              }
+              return files;
+            }
+
+            // 1) Get latest release
+            let tag = '';
+            let latest = '';
+            try {
+              const { data } = await github.rest.repos.getLatestRelease({ owner: context.repo.owner, repo: context.repo.repo });
+              tag = data.tag_name || '';
+              latest = tag.replace(/^v/, '');
+            } catch (e) {
+              core.info('No latest release found. Skipping.');
+              core.setOutput('changed', 'false');
+              core.setOutput('version', '');
+              core.setOutput('tag', '');
+              core.setOutput('files', '');
+              return;
+            }
+            if (!latest) {
+              core.info('Latest release has no tag_name. Skipping.');
+              core.setOutput('changed', 'false');
+              core.setOutput('version', '');
+              core.setOutput('tag', '');
+              core.setOutput('files', '');
+              return;
+            }
+
+            // 2) Resolve spec files
+            const specPaths = (core.getInput('spec_paths') || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+            const specPathFallback = (core.getInput('spec_path') || '').trim();
+            const entries = specPaths.length > 0 ? specPaths : (specPathFallback ? [specPathFallback] : []);
+            const files = resolveFiles(entries);
+            if (files.length === 0) {
+              core.info('No spec files resolved.');
+              core.setOutput('changed', 'false');
+              core.setOutput('version', latest);
+              core.setOutput('tag', tag);
+              core.setOutput('files', '');
+              return;
+            }
+
+            // 3) Compare and update using yq
+            const changed = [];
+            for (const path of files) {
+              try {
+                const currentRaw = execFileSync('yq', ['-r', '.info.version // ""', path], { encoding: 'utf8' }).trim();
+                const current = (currentRaw || '').replace(/^v/, '');
+                if (current !== latest) {
+                  execFileSync('yq', ['-i', `.info.version = "${latest}"`, path], { encoding: 'utf8' });
+                  changed.push(path);
+                  core.info(`Updated ${path}: ${current || '<empty>'} -> ${latest}`);
+                } else {
+                  core.info(`Up-to-date: ${path} (${current})`);
+                }
+              } catch (e) {
+                core.warning(`Failed processing ${path}: ${e.message}`);
+              }
+            }
+
+            core.setOutput('changed', changed.length > 0 ? 'true' : 'false');
+            core.setOutput('version', latest);
+            core.setOutput('tag', tag);
+            core.setOutput('files', changed.join('\n'));
+
+      - name: Create Pull Request
+        if: ${{ steps.sync.outputs.changed == 'true' }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/sync-openapi-version-to-${{ steps.sync.outputs.version }}
+          commit-message: "chore(openapi): sync info.version to ${{ steps.sync.outputs.version }}"
+          title: "chore(openapi): sync OpenAPI info.version to ${{ steps.sync.outputs.version }}"
+          body: |
+            This PR updates OpenAPI spec versions to match the latest release tag `${{ steps.sync.outputs.tag }}`.
+
+            Latest version: `${{ steps.sync.outputs.version }}`
+          labels: |
+            chore
+            openapi
+          add-paths: |
+            ${{ steps.sync.outputs.files }}
+
