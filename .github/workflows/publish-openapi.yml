@@ -28,6 +28,8 @@ on:
     secrets:
       SCALAR_API_KEY:
         required: true
+      SCALAR_ACCESS_TOKEN:
+        required: true
 
 jobs:
   publish:
@@ -80,5 +82,5 @@ jobs:
         if: ${{ inputs.docs_slug != '' }}
         run: |
           curl -fsSL -X POST "https://access.scalar.com/v1/guides/${{ inputs.docs_slug }}/publish" \
-            -H "Authorization: Bearer ${{ secrets.SCALAR_API_KEY }}"
+            -H "Authorization: Bearer ${{ secrets.SCALAR_ACCESS_TOKEN }}"
 
