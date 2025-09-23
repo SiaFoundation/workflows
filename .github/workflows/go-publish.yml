@@ -56,6 +56,7 @@ env:
 
 jobs:
   docker:
+    timeout-minutes: 30
     name: Docker
     runs-on: tenki-standard-autoscale
     permissions:
@@ -105,6 +106,7 @@ jobs:
           cache-from: type=registry,ref=${{ env.DOCKER_IMAGE_TAG }}:buildcache
           cache-to: type=registry,ref=${{ env.DOCKER_IMAGE_TAG }}:buildcache,mode=max
   linux:
+    timeout-minutes: 15
     name: Build Linux
     runs-on: ubuntu-publish
     strategy:
@@ -148,6 +150,7 @@ jobs:
           name: ${{ env.RELEASE_NAME}}
           path: release/*
   macos:
+    timeout-minutes: 15
     name: Build macOS
     runs-on: macos-latest
     strategy:
@@ -233,6 +236,7 @@ jobs:
           name: ${{ env.RELEASE_NAME}}
           path: release/*
   windows:
+    timeout-minutes: 15
     name: Build Windows
     runs-on: ${{ matrix.go-arch == 'arm64' && 'windows-publish-arm64' || 'windows-publish' }}
     strategy:
