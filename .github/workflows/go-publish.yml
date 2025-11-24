@@ -252,6 +252,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.go-version }}
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10"
       - name: Test
         uses: SiaFoundation/workflows/.github/actions/go-test@master
         with:
