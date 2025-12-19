@@ -96,6 +96,7 @@ jobs:
             type=ref,event=branch
             type=sha,prefix=
             type=semver,pattern={{version}}
+            type=raw,value=latest-beta,enable=${{ startsWith(github.ref, 'refs/tags/') }}
       - uses: docker/build-push-action@v5
         with:
           context: .
