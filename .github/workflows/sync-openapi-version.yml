@@ -36,7 +36,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const core = require('@actions/core');
             const { execFileSync } = require('child_process');
             const fs = require('fs');
 
