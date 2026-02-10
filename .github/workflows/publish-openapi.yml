@@ -19,7 +19,7 @@ on:
       node_version:
         description: Node.js version to use.
         required: false
-        default: '20'
+        default: '24'
         type: string
       docs_slug:
         description: Scalar docs site to publish after openapi spec is published.
@@ -53,11 +53,11 @@ jobs:
 
       # Bundle the OpenAPI spec to resolve external refs.
       - name: Bundle OpenAPI (${{ inputs.slug }})
-        run: npx --yes @scalar/cli@1.3.4 document bundle ${{ inputs.spec_path }} --output "$RUNNER_TEMP/bundle-${{ inputs.slug }}.yml"
+        run: npx --yes @scalar/cli@1.6.3 document bundle ${{ inputs.spec_path }} --output "$RUNNER_TEMP/bundle-${{ inputs.slug }}.yml"
 
       # Validate the bundled OpenAPI spec.
       - name: Validate OpenAPI (Bundled ${{ inputs.slug }})
-        run: npx --yes @scalar/cli@1.3.4 document validate "$RUNNER_TEMP/bundle-${{ inputs.slug }}.yml"
+        run: npx --yes @scalar/cli@1.6.3 document validate "$RUNNER_TEMP/bundle-${{ inputs.slug }}.yml"
 
       # Extract version from info.version.
       - name: Extract version (${{ inputs.slug }})
@@ -66,12 +66,12 @@ jobs:
 
       # Authenticate with Scalar.
       - name: Login to Scalar
-        run: npx --yes @scalar/cli@1.3.4 auth login --token ${{ secrets.SCALAR_API_KEY }}
+        run: npx --yes @scalar/cli@1.6.3 auth login --token ${{ secrets.SCALAR_API_KEY }}
 
       # Publish to Scalar Registry.
       - name: Publish to Registry (${{ inputs.slug }})
         run: |
-          npx --yes @scalar/cli@1.3.4 registry publish "$RUNNER_TEMP/bundle-${{ inputs.slug }}.yml" \
+          npx --yes @scalar/cli@1.6.3 registry publish "$RUNNER_TEMP/bundle-${{ inputs.slug }}.yml" \
             --namespace "${{ inputs.namespace }}" \
             --slug "${{ inputs.slug }}" \
             --version "${{ steps.ver.outputs.version }}" \
@@ -80,7 +80,5 @@ jobs:
       # Publish Scalar Docs site.
       - name: Publish Scalar Docs
         if: ${{ inputs.docs_slug != '' }}
-        run: |
-          curl -fsSL -X POST "https://access.scalar.com/v1/guides/${{ inputs.docs_slug }}/publish" \
-            -H "Authorization: Bearer ${{ secrets.SCALAR_ACCESS_TOKEN }}"
+        run: npx --yes @scalar/cli@1.6.3 project publish --slug "${{ inputs.docs_slug }}"
 
