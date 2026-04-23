@@ -7,7 +7,7 @@ jobs:
   add-to-project:
     if: github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.owner.login == github.repository_owner
     name: Add issue to project
-    runs-on: ubuntu-latest
+    runs-on: tenki-standard-small-2c-4g
     steps:
       - uses: actions/add-to-project@v0.5.0
         with:

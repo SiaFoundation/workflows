@@ -58,7 +58,7 @@ jobs:
   docker:
     timeout-minutes: 30
     name: Docker
-    runs-on: ubuntu-latest
+    runs-on: tenki-standard-medium-4c-8g
     permissions:
       packages: write
       contents: read
@@ -109,7 +109,7 @@ jobs:
   linux:
     timeout-minutes: 15
     name: Build Linux
-    runs-on: ubuntu-publish
+    runs-on: tenki-standard-medium-4c-8g
     strategy:
       matrix:
         go-arch: [amd64, arm64]
@@ -292,7 +292,7 @@ jobs:
           name: ${{ env.RELEASE_NAME}}
           path: release/*
   combine-release-assets:
-    runs-on: ubuntu-latest
+    runs-on: tenki-standard-small-2c-4g
     needs: [linux, macos, windows]
     steps:
       - name: Merge Artifacts
@@ -302,7 +302,7 @@ jobs:
   homebrew: # only runs when version-tag is a stable release tag (doesn't contain '-')
     if: startsWith(inputs.version-tag, 'v') && !contains(inputs.version-tag, '-')
     needs: [combine-release-assets]
-    runs-on: ubuntu-latest
+    runs-on: tenki-standard-small-2c-4g
     steps:
       - name: Dispatch
         uses: peter-evans/repository-dispatch@v3
