@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version: ${{ matrix.go-version }}
-      - uses: SiaFoundation/workflows/.github/actions/go-test@5a0ded089a415998335b93ec0fc3260ebabc6901 # master
+      - uses: SiaFoundation/workflows/.github/actions/go-test@e8b6c35147ded02a1609915352ae8562d1a70aef # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
       - name: Build
