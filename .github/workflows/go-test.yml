@@ -27,11 +27,11 @@ jobs:
         if: startsWith(matrix.os, 'windows')
         shell: bash
         run: git config --global core.autocrlf false
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version: ${{ matrix.go-version }}
-      - uses: SiaFoundation/workflows/.github/actions/go-test@master
+      - uses: SiaFoundation/workflows/.github/actions/go-test@22e56c0750c0febb09784caa01c60021e0b5f111 # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
       - name: Build
