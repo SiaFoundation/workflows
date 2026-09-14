@@ -68,7 +68,7 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
       - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@e8b6c35147ded02a1609915352ae8562d1a70aef # master
+        uses: SiaFoundation/workflows/.github/actions/go-test@c2ea2f0f631d40e3b293e4d45cbd707143a8105a # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
       - uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
@@ -121,7 +121,7 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
       - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@e8b6c35147ded02a1609915352ae8562d1a70aef # master
+        uses: SiaFoundation/workflows/.github/actions/go-test@c2ea2f0f631d40e3b293e4d45cbd707143a8105a # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
       - name: Setup CGO
@@ -165,7 +165,7 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
       - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@e8b6c35147ded02a1609915352ae8562d1a70aef # master
+        uses: SiaFoundation/workflows/.github/actions/go-test@c2ea2f0f631d40e3b293e4d45cbd707143a8105a # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
       - name: Setup
@@ -257,7 +257,7 @@ jobs:
         with:
           dotnet-version: "10"
       - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@e8b6c35147ded02a1609915352ae8562d1a70aef # master
+        uses: SiaFoundation/workflows/.github/actions/go-test@c2ea2f0f631d40e3b293e4d45cbd707143a8105a # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
       - name: Setup
