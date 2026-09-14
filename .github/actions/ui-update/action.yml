@@ -5,8 +5,8 @@ inputs:
     description: 'Module name to update (e.g., walletd)'
     required: true
   goVersion:
-    description: 'Go version to use (e.g., "1.21")'
-    required: true
+    description: 'Deprecated: the Go version is read from the repo go.mod'
+    required: false
   token:
     description: 'GitHub token for authentication'
     required: true
@@ -20,7 +20,7 @@ runs:
     - name: Set up Go
       uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
-        go-version: ${{ inputs.goVersion }}
+        go-version-file: go.mod
 
     - name: Check for new tag in SiaFoundation/web
       env:
