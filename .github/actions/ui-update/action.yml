@@ -15,10 +15,10 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout repository
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Set up Go
-      uses: actions/setup-go@v7
+      uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
         go-version: ${{ inputs.goVersion }}
 
@@ -29,11 +29,11 @@ runs:
       run: |
         # Fetch tags with pagination
         TAGS_JSON=$(gh api --paginate repos/SiaFoundation/web/tags)
-    
+
         # Extract tags that start with "moduleName/", sort them in version order, and pick the highest version
         LATEST_GO_TAG=$(echo "$TAGS_JSON" | jq -r '.[] | select(.name | startswith("${{ inputs.moduleName }}/")).name' | sort -Vr | head -n 1)
         LATEST_VERSION=$(echo "$LATEST_GO_TAG" | sed "s/${{ inputs.moduleName }}\///")
-    
+
         echo "Latest tag is $LATEST_GO_TAG"
         echo "GO_TAG=$LATEST_GO_TAG" >> $GITHUB_ENV
         echo "VERSION=$LATEST_VERSION" >> $GITHUB_ENV
@@ -94,7 +94,7 @@ runs:
         echo "PR_BRANCH_NAME=$PR_BRANCH_NAME" >> $GITHUB_ENV
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v8
+      uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
       if: env.GO_TAG != 'null' && env.UPDATED == 'true'
       with:
         token: ${{ inputs.token }}
