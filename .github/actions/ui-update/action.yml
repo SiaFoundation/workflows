@@ -15,10 +15,10 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v7
       with:
         go-version: ${{ inputs.goVersion }}
 
@@ -94,7 +94,7 @@ runs:
         echo "PR_BRANCH_NAME=$PR_BRANCH_NAME" >> $GITHUB_ENV
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v5
+      uses: peter-evans/create-pull-request@v8
       if: env.GO_TAG != 'null' && env.UPDATED == 'true'
       with:
         token: ${{ inputs.token }}
