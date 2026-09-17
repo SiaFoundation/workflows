@@ -33,6 +33,9 @@ jobs:
       - name: Sync OpenAPI versions
         id: sync
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          SPEC_PATH: ${{ inputs.spec_path }}
+          SPEC_PATHS: ${{ inputs.spec_paths }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -79,8 +82,11 @@ jobs:
             }
 
             // 2) Resolve spec files
-            const specPaths = (core.getInput('spec_paths') || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-            const specPathFallback = (core.getInput('spec_path') || '').trim();
+            // Read from env, not core.getInput: these arrive as workflow_call
+            // inputs on the job, so they are never exposed to this step as
+            // INPUT_* variables.
+            const specPaths = (process.env.SPEC_PATHS || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+            const specPathFallback = (process.env.SPEC_PATH || '').trim();
             const entries = specPaths.length > 0 ? specPaths : (specPathFallback ? [specPathFallback] : []);
             const files = resolveFiles(entries);
             if (files.length === 0) {
