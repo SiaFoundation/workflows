@@ -57,6 +57,32 @@ jobs:
               return files;
             }
 
+            // Replace info.version in place, rewriting only that one line.
+            // yq -i reserializes the whole document, which collapses hand
+            // wrapped block scalars and strips blank lines — a one line bump
+            // becomes a whole file reformat.
+            function setInfoVersion(text, version) {
+              const lines = text.split('\n');
+              const infoIdx = lines.findIndex((l) => /^info:\s*(#.*)?$/.test(l));
+              if (infoIdx === -1) return null;
+              // Track the indent of info's own keys so a `version:` nested
+              // deeper (inside a description, say) is never matched.
+              let indent = null;
+              for (let i = infoIdx + 1; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line.trim()) continue;
+                const m = line.match(/^(\s+)\S/);
+                if (!m) break;
+                if (indent === null) indent = m[1];
+                if (m[1] !== indent) continue;
+                if (new RegExp(`^${indent}version:\\s*(.*)$`).test(line)) {
+                  lines[i] = `${indent}version: ${version}`;
+                  return lines.join('\n');
+                }
+              }
+              return null;
+            }
+
             // 1) Get latest release
             let tag = '';
             let latest = '';
@@ -105,7 +131,18 @@ jobs:
                 const currentRaw = execFileSync('yq', ['-r', '.info.version // ""', path], { encoding: 'utf8' }).trim();
                 const current = (currentRaw || '').replace(/^v/, '');
                 if (current !== latest) {
-                  execFileSync('yq', ['-i', `.info.version = "${latest}"`, path], { encoding: 'utf8' });
+                  const updated = setInfoVersion(fs.readFileSync(path, 'utf8'), latest);
+                  if (updated === null) {
+                    core.warning(`Could not locate info.version in ${path}; skipping.`);
+                    continue;
+                  }
+                  fs.writeFileSync(path, updated);
+                  // Confirm the file still parses and now reports the new version.
+                  const after = execFileSync('yq', ['-r', '.info.version // ""', path], { encoding: 'utf8' }).trim();
+                  if (after.replace(/^v/, '') !== latest) {
+                    core.warning(`Verification failed for ${path}: reads ${after} after update; skipping.`);
+                    continue;
+                  }
                   changed.push(path);
                   core.info(`Updated ${path}: ${current || '<empty>'} -> ${latest}`);
                 } else {
