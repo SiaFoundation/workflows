@@ -23,6 +23,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          # release events check out refs/tags/<tag>, which leaves the runner in
+          # detached HEAD. create-pull-request needs a branch to base on, and
+          # building the PR from the tag's tree would revert anything merged
+          # after it.
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Install yq
         run: |
