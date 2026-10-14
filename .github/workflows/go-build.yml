@@ -23,11 +23,6 @@ on:
         type: string
         required: true
         default: -trimpath -a -ldflags '-s -w'
-      go-test-args:
-        description: Arguments to pass to `go test`
-        type: string
-        required: false
-        default: -race;-tags=testing netgo
       cgo-enabled:
         description: corresponds to CGO_ENABLED
         type: number
@@ -66,10 +61,6 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ inputs.go-version }}
-      - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@b42741de5798fcb1881143d714a923501ec4ff89 # master
-        with:
-          go-test-args: ${{ inputs.go-test-args }}
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
         with:
           cache-image: false
@@ -121,10 +112,6 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ inputs.go-version }}
-      - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@b42741de5798fcb1881143d714a923501ec4ff89 # master
-        with:
-          go-test-args: ${{ inputs.go-test-args }}
       - name: Setup CGO
         if: ${{ inputs.cgo-enabled }}
         run: |
@@ -167,10 +154,6 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ inputs.go-version }}
-      - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@b42741de5798fcb1881143d714a923501ec4ff89 # master
-        with:
-          go-test-args: ${{ inputs.go-test-args }}
       - name: Setup
         env:
           APPLE_CERT_ID: ${{ secrets.APPLE_CERT_ID }}
@@ -249,9 +232,6 @@ jobs:
     env:
       RELEASE_NAME: ${{ inputs.project }}_windows_${{ matrix.go-arch }}
     steps:
-      - name: Configure Git # required for golangci-lint on Windows
-        shell: bash
-        run: git config --global core.autocrlf false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref }}
@@ -261,10 +241,6 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: "10"
-      - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@b42741de5798fcb1881143d714a923501ec4ff89 # master
-        with:
-          go-test-args: ${{ inputs.go-test-args }}
       - name: Setup
         shell: bash
         run: |
