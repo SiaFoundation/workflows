@@ -1,4 +1,4 @@
-name: Publish
+name: Build
 
 on:
   workflow_call:
@@ -40,14 +40,6 @@ on:
         default: Dockerfile
       project:
         description: The project to build
-        type: string
-        required: true
-      project-desc:
-        description: A short description of the project to build
-        type: string
-        required: true
-      version-tag:
-        description: The git tag of the version to publish
         type: string
         required: true
 
@@ -299,21 +291,3 @@ jobs:
         uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ inputs.project }}
-  homebrew: # only runs when version-tag is a stable release tag (doesn't contain '-')
-    if: startsWith(inputs.version-tag, 'v') && !contains(inputs.version-tag, '-')
-    needs: [combine-release-assets]
-    runs-on: tenki-standard-small-2c-4g
-    steps:
-      - name: Dispatch
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
-        with:
-          token: ${{ secrets.PAT_REPOSITORY_DISPATCH }}
-          repository: siafoundation/homebrew-sia
-          event-type: release-tagged
-          client-payload: >
-            {
-              "description": "${{ inputs.project-desc }}",
-              "tag": "${{ inputs.version-tag }}",
-              "project": "${{ inputs.project }}",
-              "workflow_id": "${{ github.run_id }}"
-            }

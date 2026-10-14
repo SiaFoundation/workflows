@@ -1,0 +1,54 @@
+name: Dispatch Linux
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        description: The project to publish
+        type: string
+        required: true
+      project-desc:
+        description: A short description of the project
+        type: string
+        required: true
+      ref:
+        description: The git ref (tag or commit) of the version to publish
+        type: string
+        required: true
+      repository:
+        description: The repository to dispatch to
+        type: string
+        required: false
+        default: siafoundation/linux
+
+jobs:
+  dispatch:
+    runs-on: tenki-standard-small-2c-4g
+    steps:
+      - name: Determine Component
+        id: component
+        shell: bash
+        env:
+          REF: ${{ inputs.ref }}
+        run: |
+          if [[ "$REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "component=main" >> $GITHUB_OUTPUT
+          elif [[ "$REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+- ]]; then
+            echo "component=beta" >> $GITHUB_OUTPUT
+          else
+            echo "component=nightly" >> $GITHUB_OUTPUT
+          fi
+      - name: Dispatch
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
+        with:
+          token: ${{ secrets.PAT_REPOSITORY_DISPATCH }}
+          repository: ${{ inputs.repository }}
+          event-type: release-tagged
+          client-payload: >
+            {
+              "description": "${{ inputs.project-desc }}",
+              "tag": "${{ inputs.ref }}",
+              "project": "${{ inputs.project }}",
+              "component": "${{ steps.component.outputs.component }}",
+              "workflow_id": "${{ github.run_id }}"
+            }
