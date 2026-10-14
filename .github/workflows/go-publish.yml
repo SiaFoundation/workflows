@@ -68,13 +68,13 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
       - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@c2ea2f0f631d40e3b293e4d45cbd707143a8105a # master
+        uses: SiaFoundation/workflows/.github/actions/go-test@b42741de5798fcb1881143d714a923501ec4ff89 # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
-      - uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
         with:
           cache-image: false
-      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           cache-binary: false
       - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
@@ -97,7 +97,7 @@ jobs:
             type=sha,prefix=
             type=semver,pattern={{version}}
             type=raw,value=latest-beta,enable=${{ startsWith(github.ref, 'refs/tags/') }}
-      - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           file: ${{ inputs.dockerfile }}
@@ -121,7 +121,7 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
       - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@c2ea2f0f631d40e3b293e4d45cbd707143a8105a # master
+        uses: SiaFoundation/workflows/.github/actions/go-test@b42741de5798fcb1881143d714a923501ec4ff89 # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
       - name: Setup CGO
@@ -165,7 +165,7 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
       - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@c2ea2f0f631d40e3b293e4d45cbd707143a8105a # master
+        uses: SiaFoundation/workflows/.github/actions/go-test@b42741de5798fcb1881143d714a923501ec4ff89 # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
       - name: Setup
@@ -257,7 +257,7 @@ jobs:
         with:
           dotnet-version: "10"
       - name: Test
-        uses: SiaFoundation/workflows/.github/actions/go-test@c2ea2f0f631d40e3b293e4d45cbd707143a8105a # master
+        uses: SiaFoundation/workflows/.github/actions/go-test@b42741de5798fcb1881143d714a923501ec4ff89 # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
       - name: Setup
