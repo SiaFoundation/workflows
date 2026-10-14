@@ -34,6 +34,7 @@ jobs:
       - uses: SiaFoundation/workflows/.github/actions/go-test@b42741de5798fcb1881143d714a923501ec4ff89 # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
+          lint: ${{ matrix.go-version == 1.27 }}
       - name: Build
         if: ${{ inputs.try-build }}
         shell: bash
