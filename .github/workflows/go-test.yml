@@ -7,6 +7,7 @@ on:
         description: "Arguments to pass to `go test`"
         type: string
         required: false
+        default: -race;-tags=testing netgo
       try-build:
         description: "Attempt to build the project"
         type: boolean
@@ -34,9 +35,14 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ inputs.go-version }}
-      - uses: SiaFoundation/workflows/.github/actions/go-test@70766ac59c74a44be6edb67e6f07c7bb67ffe3b2 # master
+      - name: Lint
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
-          go-test-args: ${{ inputs.go-test-args }}
+          skip-cache: true
+      - name: Test
+        uses: n8maninger/action-golang-test@6d21a416337f76ddce0513e25949a5c456f02d38 # v2.3.0
+        with:
+          args: ${{ inputs.go-test-args }}
       - name: Build
         if: ${{ inputs.try-build }}
         shell: bash
