@@ -6,16 +6,11 @@ inputs:
     description: 'Arguments to pass to `go test`'
     required: false
     default: -race;-tags=testing netgo
-  lint:
-    description: 'Run golangci-lint'
-    required: false
-    default: 'true'
 
 runs:
   using: composite
   steps:
     - name: Lint
-      if: ${{ inputs.lint == 'true' }}
       uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
       with:
         skip-cache: true

@@ -12,6 +12,10 @@ on:
         type: boolean
         required: false
         default: true
+      go-version:
+        description: "Go version to test with"
+        type: string
+        required: true
 
 jobs:
   test:
@@ -19,7 +23,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go-version: [1.26, 1.27]
         os: [tenki-standard-medium-4c-8g, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -30,11 +33,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ${{ inputs.go-version }}
       - uses: SiaFoundation/workflows/.github/actions/go-test@70766ac59c74a44be6edb67e6f07c7bb67ffe3b2 # master
         with:
           go-test-args: ${{ inputs.go-test-args }}
-          lint: ${{ matrix.go-version == 1.27 }}
       - name: Build
         if: ${{ inputs.try-build }}
         shell: bash
