@@ -42,6 +42,11 @@ on:
         description: The project to build
         type: string
         required: true
+      ref:
+        description: The release tag to build. Defaults to the ref that triggered the workflow.
+        type: string
+        required: false
+        default: ""
 
 env:
   CGO_ENABLED: ${{ inputs.cgo-enabled }}
@@ -56,6 +61,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ inputs.go-version }}
@@ -87,8 +94,8 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha,prefix=
-            type=semver,pattern={{version}}
-            type=raw,value=latest-beta,enable=${{ startsWith(github.ref, 'refs/tags/') }}
+            type=semver,pattern={{version}},value=${{ inputs.ref }}
+            type=raw,value=latest-beta,enable=${{ inputs.ref != '' || startsWith(github.ref, 'refs/tags/') }}
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
@@ -109,6 +116,8 @@ jobs:
       RELEASE_NAME: ${{ inputs.project }}_linux_${{ matrix.go-arch }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ inputs.go-version }}
@@ -153,6 +162,8 @@ jobs:
       RELEASE_NAME: ${{ inputs.project }}_darwin_${{ matrix.go-arch }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ inputs.go-version }}
@@ -242,6 +253,8 @@ jobs:
         shell: bash
         run: git config --global core.autocrlf false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ inputs.go-version }}
